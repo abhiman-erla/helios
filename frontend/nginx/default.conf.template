@@ -1,0 +1,51 @@
+# Rendered at container start by the nginx image's entrypoint (envsubst), which
+# fills in ${NGINX_LOCAL_RESOLVERS} (the container's DNS server) and ${BACKEND_URL}.
+server {
+    listen 8080;            # unprivileged image: non-root users can't bind port 80
+    server_name _;
+    root /usr/share/nginx/html;
+    server_tokens off;      # don't reveal the nginx version
+
+    # Basic security headers.
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    # ALB and Docker health checks.
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
+    # Local Compose only: forward /api to the backend container.
+    # In AWS the ALB routes /api/* straight to the backend, so requests never
+    # reach this block. Using a variable + resolver makes nginx look up the
+    # hostname per request instead of at startup, so the container still starts
+    # in AWS where no host called "backend" exists.
+    location /api/ {
+        resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+        set $backend_upstream ${BACKEND_URL};
+        proxy_pass $backend_upstream;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # Vite puts content hashes in asset filenames, so they can be cached for a
+    # year; a new build produces new filenames.
+    location /assets/ {
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
+        try_files $uri =404;
+    }
+
+    # Single-page app: unknown paths fall back to index.html. Never cache
+    # index.html, so users always get the latest asset filenames after a deploy.
+    location / {
+        add_header Cache-Control "no-cache";
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options "DENY" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        try_files $uri /index.html;
+    }
+}

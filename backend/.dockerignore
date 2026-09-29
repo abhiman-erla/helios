@@ -1,0 +1,11 @@
+# Keep the build context small and never copy secrets or local junk into images.
+node_modules
+npm-debug.log*
+coverage
+tests
+.env
+.env.*
+Dockerfile
+.dockerignore
+eslint.config.js
+*.md

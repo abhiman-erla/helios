@@ -41,8 +41,35 @@ This runs on a near-zero budget. Local development and CI are free. AWS environm
 
 ## Running locally
 
-Coming in Phase 1:
+Requires Docker Desktop.
 
 ```bash
-docker compose up --build
+docker compose up --build        # or: bash scripts/local-start.sh
 ```
+
+| URL | What |
+|---|---|
+| http://localhost:8080 | Web app |
+| http://localhost:3000/api/tasks | REST API |
+| http://localhost:3000/health | Liveness check (used by load balancer) |
+| http://localhost:3000/ready | Readiness check (verifies the database) |
+
+Stop with `docker compose down`. Add `-v` to also wipe the local database.
+
+### Tests and lint
+
+```bash
+docker compose up -d postgres    # backend API tests use a real Postgres
+cd backend  && npm ci && npm run lint && npm test
+cd frontend && npm ci && npm run lint && npm test
+```
+
+### API
+
+| Method | Path | Body |
+|---|---|---|
+| GET | `/api/tasks` | |
+| POST | `/api/tasks` | `{ "title": "...", "description": "...", "status": "todo" }` |
+| GET | `/api/tasks/:id` | |
+| PATCH | `/api/tasks/:id` | any of `title`, `description`, `status` (`todo`, `in_progress`, `done`) |
+| DELETE | `/api/tasks/:id` | |

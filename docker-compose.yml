@@ -1,0 +1,56 @@
+# Local development stack: `docker compose up --build`
+# App: http://localhost:8080   API: http://localhost:3000
+#
+# Credentials below are LOCAL-ONLY defaults so the stack runs with zero setup.
+# Override them in a git-ignored .env file. AWS never uses these; there the
+# password comes from SSM Parameter Store.
+
+name: taskops
+
+services:
+  postgres:
+    image: postgres:16.15-alpine3.24
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-taskops}
+      POSTGRES_USER: ${DATABASE_USER:-taskops}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-taskops_local}
+    ports:
+      - "5432:5432" # exposed so `npm test` on your machine can reach it
+    volumes:
+      - pgdata:/var/lib/postgresql/data # named volume: data survives `down`/`up`
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    image: taskops-backend:local
+    environment:
+      APP_ENV: local
+      DATABASE_HOST: postgres # the Compose service name works as a hostname
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-taskops}
+      DATABASE_USER: ${DATABASE_USER:-taskops}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-taskops_local}
+    # Apply migrations, then start the API. `exec` makes node PID 1 so it gets SIGTERM.
+    command: ["sh", "-c", "node src/migrate.js && exec node src/server.js"]
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy # wait until Postgres accepts connections
+
+  frontend:
+    build: ./frontend
+    image: taskops-frontend:local
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy # uses the HEALTHCHECK in backend/Dockerfile
+
+volumes:
+  pgdata:
