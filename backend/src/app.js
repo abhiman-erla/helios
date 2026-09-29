@@ -2,6 +2,22 @@ import express from 'express';
 import { pinoHttp } from 'pino-http';
 import { tasksRouter } from './routes/tasks.js';
 
+// Log only what's useful for debugging and metrics. Full headers are ~1 KB per
+// request: that costs money in CloudWatch (billed per GB ingested), buries the
+// signal, and risks capturing sensitive values.
+const requestLogOptions = {
+  serializers: {
+    req: (req) => ({ id: req.id, method: req.method, url: req.url }),
+    res: (res) => ({ statusCode: res.statusCode }),
+  },
+  // Level by outcome, so CloudWatch can filter/alarm on level >= 50 (errors).
+  customLogLevel: (_req, res, err) => {
+    if (err || res.statusCode >= 500) return 'error';
+    if (res.statusCode >= 400) return 'warn';
+    return 'info';
+  },
+};
+
 // Building the app separately from server.js lets tests call routes
 // in-process with Supertest, without opening a network port.
 export function createApp({ pool, logger }) {
@@ -25,7 +41,7 @@ export function createApp({ pool, logger }) {
   });
 
   // Request logs after the health routes, so health-check noise isn't logged.
-  app.use(pinoHttp({ logger }));
+  app.use(pinoHttp({ logger, ...requestLogOptions }));
 
   // Behind the ALB, /api/health lets the smoke test reach the backend's liveness route.
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
