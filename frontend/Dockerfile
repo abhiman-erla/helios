@@ -12,7 +12,7 @@ RUN npm run build
 # Only the built files (HTML/JS/CSS) ship. Node, npm and source code stay in the
 # build stage, so the final image is tiny and has little to attack.
 # "unprivileged" = runs as the nginx user (uid 101) on port 8080, not root.
-FROM nginxinc/nginx-unprivileged:1.28.2-alpine3.23
+FROM nginxinc/nginx-unprivileged:1.30.5-alpine3.24
 
 # Where /api is proxied for local Compose. Unused in AWS (the ALB routes /api).
 # NGINX_ENTRYPOINT_LOCAL_RESOLVERS tells the entrypoint to read the container's

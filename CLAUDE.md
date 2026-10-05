@@ -12,7 +12,7 @@ The owner is building this to learn and to explain it in DevOps/Cloud/SRE interv
 
 ## Current status
 
-- **Phase:** Phase 1 in progress (app skeleton, Dockerfiles, Docker Compose).
+- **Phase:** Phase 1 done (local app, Dockerfiles, Compose; images scan clean with Trivy). Phase 2 (CI) next.
 - The full plan lives in `README.md`. Keep this file and the README in sync when decisions change.
 
 ## Open decisions (ask before assuming)
@@ -153,8 +153,8 @@ trivy config terraform/          # IaC misconfiguration scan
 
 ## Implementation phases
 
-1. **Local app** — frontend, backend, Postgres, Dockerfiles, Compose. ← *current*
-2. **CI** — GitHub Actions lint/test/build, Trivy scan.
+1. **Local app** — frontend, backend, Postgres, Dockerfiles, Compose. ✔ done
+2. **CI** — GitHub Actions lint/test/build, Trivy scan. ← *current*
 3. **AWS infra** — Terraform remote state, VPC, ECR, ECS, ALB, RDS, IAM.
 4. **Automated deploy** — OIDC, push to ECR, deploy to ECS, health checks, smoke tests.
 5. **Observability** — CloudWatch logs, metrics, dashboard, alarms (unhealthy targets, CPU > 80%, 5xx spike, DB connections).

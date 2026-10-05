@@ -28,7 +28,7 @@ CloudWatch: logs, dashboard, alarms → email
 ## Roadmap
 
 - [x] **Phase 0:** Repo setup
-- [ ] **Phase 1:** Local app: backend, frontend, Postgres, Dockerfiles, Compose
+- [x] **Phase 1:** Local app: backend, frontend, Postgres, Dockerfiles, Compose
 - [ ] **Phase 2:** CI: lint, test, build, Trivy scans, Dependabot
 - [ ] **Phase 3:** AWS infrastructure with Terraform
 - [ ] **Phase 4:** Automated deploys (OIDC, ECR, ECS, rollback, prod approval gate)
