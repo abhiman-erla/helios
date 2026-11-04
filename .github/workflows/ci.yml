@@ -23,6 +23,7 @@ jobs:
     uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
     with:
       working-directory: backend
+      node-version: "24"
       # Same Postgres setup that passed the 26 backend tests locally.
       setup-command: docker compose up -d --wait postgres && npm run migrate
       test-env: |
@@ -35,6 +36,7 @@ jobs:
     uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
     with:
       working-directory: frontend
+      node-version: "24"
 
   helios-backend:
     uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
