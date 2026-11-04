@@ -14,6 +14,13 @@ RUN npm run build
 # "unprivileged" = runs as the nginx user (uid 101) on port 8080, not root.
 FROM nginxinc/nginx-unprivileged:1.30.6-alpine3.24
 
+# The newest base tag still ships Alpine packages with fixed HIGH/CRITICAL CVEs
+# (brotli-libs, curl, libexpat). Upgrade them, then go back to the image's own
+# non-root user (uid 101, read from the base image config).
+USER root
+RUN apk upgrade --no-cache
+USER 101
+
 # Where /api is proxied for local Compose. Unused in AWS (the ALB routes /api).
 # NGINX_ENTRYPOINT_LOCAL_RESOLVERS tells the entrypoint to read the container's
 # DNS server into ${NGINX_LOCAL_RESOLVERS} for the template.
