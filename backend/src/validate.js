@@ -13,7 +13,7 @@ export function validateTask(input, { partial = false } = {}) {
   }
 
   if (input.title !== undefined) {
-    if (typeof input.title !== 'string' || input.title.trim() === '') {
+    if (typeof input.title !== 'string') {
       errors.push('title must be a non-empty string');
     } else if (input.title.trim().length > TITLE_MAX) {
       errors.push(`title must be at most ${TITLE_MAX} characters`);
