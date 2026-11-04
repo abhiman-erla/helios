@@ -64,13 +64,56 @@ jobs:
     with:
       context: frontend
       image-name: helios-frontend
-      # nginx listens on 8080; /health is a static "ok" and needs no backend.
+      # nginx listens on 8080; /health is answered by nginx itself ("ok <version>")
+      # and needs no backend.
       smoke-port: "8080"
       smoke-path: /health
 
+  # Builds the whole stack and proves nginx proxies /api to the backend, which the
+  # single-image boot test can't. Compose has local-only default credentials.
+  compose-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Start the stack
+        run: docker compose up -d --build --wait --wait-timeout 180
+
+      - name: Check nginx and its proxy to the backend
+        run: |
+          # >>> compose-smoke
+          set -euo pipefail
+          # Only the backend returns this JSON, so it proves the proxy works.
+          api=$(curl -fsS --max-time 10 http://localhost:8080/api/health)
+          echo "/api/health: $api"
+          case "$api" in
+            *'"status":"ok"'*) ;;
+            *) echo '::error::/api/health did not return the backend JSON'; exit 1 ;;
+          esac
+          health=$(curl -fsS --max-time 10 http://localhost:8080/health)
+          echo "/health: $health"
+          case "$health" in
+            ok*) ;;
+            *) echo '::error::frontend /health does not start with ok'; exit 1 ;;
+          esac
+          # <<< compose-smoke
+
+      - name: Show compose logs
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v
+
   ci-ok:
     if: always()
-    needs: [secrets-scan, workflow-lint, backend, frontend, helios-backend, helios-frontend]
+    needs: [secrets-scan, workflow-lint, backend, frontend, helios-backend, helios-frontend, compose-smoke]
     runs-on: ubuntu-latest
     permissions: {}
     steps:
