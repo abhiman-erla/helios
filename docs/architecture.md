@@ -13,8 +13,8 @@ Postgres healthy (`pg_isready`) → backend runs migrations, then starts and bec
 
 | Component | Image | Notes |
 |---|---|---|
-| frontend | `nginxinc/nginx-unprivileged:1.30.5-alpine3.24` | Multi-stage: Node builds the Vite bundle, only static files ship. Runs as uid 101 on 8080. Proxies `/api` locally only. |
-| backend | `node:24.21.0-alpine3.24` | Multi-stage, prod deps only, npm removed from runtime, runs as `node` user, code read-only to the app. |
+| frontend | `nginxinc/nginx-unprivileged:1.30.6-alpine3.24` | Multi-stage: Node builds the Vite bundle, only static files ship. Runs as uid 101 on 8080. Proxies `/api` locally only. |
+| backend | `node:24.22.2-alpine3.24` | Multi-stage, prod deps only, npm removed from runtime, runs as `node` user, code read-only to the app. |
 | postgres | `postgres:16.15-alpine3.24` | Named volume `pgdata`; an init script creates a separate test database. |
 
 ### Health endpoints

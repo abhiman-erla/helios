@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      npm-backend:
+        patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      npm-frontend:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      docker-backend:
+        patterns: ["*"]
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: weekly
+    groups:
+      docker-frontend:
+        patterns: ["*"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

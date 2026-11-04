@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  secrets-scan:
+    uses: abhiman-erla/ci-templates/.github/workflows/secret-scan.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+
+  workflow-lint:
+    uses: abhiman-erla/ci-templates/.github/workflows/workflow-lint.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+
+  backend:
+    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    with:
+      working-directory: backend
+      # Same Postgres setup that passed the 26 backend tests locally.
+      setup-command: docker compose up -d --wait postgres && npm run migrate
+      test-env: |
+        DATABASE_HOST=localhost
+        DATABASE_NAME=taskops
+        DATABASE_USER=taskops
+        DATABASE_PASSWORD=taskops_local
+
+  frontend:
+    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    with:
+      working-directory: frontend
+
+  helios-backend:
+    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      context: backend
+      image-name: helios-backend
+      smoke-port: "3000"
+      smoke-path: /health
+      # /health makes no database call and the pool connects lazily, but
+      # config.js refuses to start without these. Dummy values, no database.
+      smoke-env: |
+        DATABASE_HOST=smoke-test.invalid
+        DATABASE_NAME=smoke
+        DATABASE_USER=smoke
+        DATABASE_PASSWORD=smoke-not-a-secret
+
+  helios-frontend:
+    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    permissions:
+      contents: read
+      packages: write
+    with:
+      context: frontend
+      image-name: helios-frontend
+      # nginx listens on 8080; /health is a static "ok" and needs no backend.
+      smoke-port: "8080"
+      smoke-path: /health
+
+  ci-ok:
+    if: always()
+    needs: [secrets-scan, workflow-lint, backend, frontend, helios-backend, helios-frontend]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # v1.3.0
+        with:
+          jobs: ${{ toJSON(needs) }}
