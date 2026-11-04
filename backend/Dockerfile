@@ -2,7 +2,7 @@
 
 # ---- Stage 1: install production dependencies --------------------------------
 # Pinned to an exact Node + Alpine version so builds are reproducible.
-FROM node:24.22.2-alpine3.24 AS deps
+FROM node:26.13.0-alpine3.24 AS deps
 WORKDIR /app
 # Copy only the manifests first: Docker caches this layer, so `npm ci` re-runs
 # only when dependencies change, not on every code change.
@@ -10,7 +10,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 # ---- Stage 2: runtime image ---------------------------------------------------
-FROM node:24.22.2-alpine3.24 AS runtime
+FROM node:26.13.0-alpine3.24 AS runtime
 
 # The app runs with `node` directly and never needs npm at runtime. Removing
 # npm/npx/corepack takes their bundled dependencies out of the final filesystem,
