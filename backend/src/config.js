@@ -25,8 +25,10 @@ export function loadConfig(env = process.env) {
       database: env.DATABASE_NAME,
       user: env.DATABASE_USER,
       password: env.DATABASE_PASSWORD,
-      // RDS supports TLS; turn it on in AWS with DATABASE_SSL=true.
-      ssl: env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
+      // Turn TLS on with DATABASE_SSL=true (Neon, RDS). The server's certificate is
+      // always verified against Node's CA list. A private CA, such as RDS's, must be
+      // added with NODE_EXTRA_CA_CERTS rather than by switching verification off.
+      ssl: env.DATABASE_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     },
   };
 }

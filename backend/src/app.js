@@ -23,11 +23,15 @@ const requestLogOptions = {
 export function createApp({ pool, logger }) {
   const app = express();
   app.disable('x-powered-by'); // don't advertise the framework to attackers
+
+  // The image's commit SHA, set at build time. The deploy check polls /health
+  // until this reports the new commit, since the old version answers during a deploy.
+  const version = process.env.APP_VERSION || 'local';
   app.use(express.json({ limit: '100kb' }));
 
   // Liveness: "is the process up?" No DB call, so a slow database doesn't make
   // the ALB kill healthy containers. This is what the ALB health check hits.
-  app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/health', (_req, res) => res.json({ status: 'ok', version }));
 
   // Readiness: "can I actually serve requests?" Checks the database.
   app.get('/ready', async (_req, res) => {
@@ -44,7 +48,7 @@ export function createApp({ pool, logger }) {
   app.use(pinoHttp({ logger, ...requestLogOptions }));
 
   // Behind the ALB, /api/health lets the smoke test reach the backend's liveness route.
-  app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.get('/api/health', (_req, res) => res.json({ status: 'ok', version }));
   app.use('/api/tasks', tasksRouter(pool));
 
   app.use((_req, res) => res.status(404).json({ error: 'not found' }));

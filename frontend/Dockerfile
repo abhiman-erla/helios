@@ -21,10 +21,13 @@ USER root
 RUN apk upgrade --no-cache
 USER 101
 
-# Where /api is proxied for local Compose. Unused in AWS (the ALB routes /api).
+# Where /api is proxied, defaulting to local Compose. Unused in AWS (the ALB routes
+# /api). On Render, set BACKEND_URL to the backend's https URL and BACKEND_HOST to
+# its host name.
 # NGINX_ENTRYPOINT_LOCAL_RESOLVERS tells the entrypoint to read the container's
 # DNS server into ${NGINX_LOCAL_RESOLVERS} for the template.
 ENV BACKEND_URL=http://backend:3000 \
+    BACKEND_HOST=backend \
     NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 
 ARG APP_VERSION=local

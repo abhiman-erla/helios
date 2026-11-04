@@ -38,7 +38,31 @@ describe('health endpoints', () => {
   test('GET /health returns ok without touching the DB', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: 'ok' });
+    expect(res.body.status).toBe('ok');
+  });
+
+  // The deploy check polls /health until it reports the new commit.
+  describe.each(['/health', '/api/health'])('%s version', (path) => {
+    const original = process.env.APP_VERSION;
+
+    afterEach(() => {
+      if (original === undefined) delete process.env.APP_VERSION;
+      else process.env.APP_VERSION = original;
+    });
+
+    test('reports APP_VERSION', async () => {
+      process.env.APP_VERSION = 'abc123';
+      const res = await request(createApp({ pool, logger })).get(path);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: 'ok', version: 'abc123' });
+    });
+
+    test.each([undefined, ''])('falls back to "local" when APP_VERSION is %j', async (value) => {
+      if (value === undefined) delete process.env.APP_VERSION;
+      else process.env.APP_VERSION = value;
+      const res = await request(createApp({ pool, logger })).get(path);
+      expect(res.body).toEqual({ status: 'ok', version: 'local' });
+    });
   });
 
   test('GET /ready confirms the database is reachable', async () => {
