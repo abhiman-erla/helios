@@ -1,5 +1,7 @@
 # Helios · TaskOps
 
+[![CI](https://github.com/abhiman-erla/helios/actions/workflows/ci.yml/badge.svg)](https://github.com/abhiman-erla/helios/actions/workflows/ci.yml)
+
 A cloud-native DevOps portfolio project. **TaskOps** is a deliberately small task-management app (create, update, track tasks). The focus is the platform around it: containerization, CI/CD, security scanning, infrastructure as code, automated deployment to AWS, and monitoring.
 
 ## Architecture (target)
