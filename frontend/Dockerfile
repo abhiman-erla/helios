@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Stage 1: build the static site ------------------------------------------
-FROM node:24.22.2-alpine3.24 AS build
+FROM node:26.13.0-alpine3.24 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -12,7 +12,7 @@ RUN npm run build
 # Only the built files (HTML/JS/CSS) ship. Node, npm and source code stay in the
 # build stage, so the final image is tiny and has little to attack.
 # "unprivileged" = runs as the nginx user (uid 101) on port 8080, not root.
-FROM nginxinc/nginx-unprivileged:1.30.6-alpine3.24
+FROM nginxinc/nginx-unprivileged:1.31.7-alpine3.24
 
 # The newest base tag still ships Alpine packages with fixed HIGH/CRITICAL CVEs
 # (brotli-libs, curl, libexpat). Upgrade them, then go back to the image's own
