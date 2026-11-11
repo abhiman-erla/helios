@@ -14,13 +14,13 @@ permissions:
 
 jobs:
   secrets-scan:
-    uses: abhiman-erla/ci-templates/.github/workflows/secret-scan.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/secret-scan.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
 
   workflow-lint:
-    uses: abhiman-erla/ci-templates/.github/workflows/workflow-lint.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/workflow-lint.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
 
   backend:
-    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
     with:
       working-directory: backend
       node-version: "24"
@@ -33,13 +33,13 @@ jobs:
         DATABASE_PASSWORD=taskops_local
 
   frontend:
-    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/node-ci.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
     with:
       working-directory: frontend
       node-version: "24"
 
   helios-backend:
-    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
     permissions:
       contents: read
       packages: write
@@ -57,7 +57,7 @@ jobs:
         DATABASE_PASSWORD=smoke-not-a-secret
 
   helios-frontend:
-    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@202b7d7054b3443e16eb85467dc6f744d1f6036b # v1.1.0
+    uses: abhiman-erla/ci-templates/.github/workflows/docker-build.yml@590537b0bf92f11c36470b118c6e18410cce5d74 # v1.4.0
     permissions:
       contents: read
       packages: write
